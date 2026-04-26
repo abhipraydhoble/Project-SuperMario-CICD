@@ -227,6 +227,7 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION = "ap-southeast-1"
         CLUSTER_NAME = "EKS_CLOUD"
+        KUBECONFIG = "/var/lib/jenkins/.kube/config"
     }
 
     stages {
@@ -256,14 +257,16 @@ pipeline {
             }
         }
 
-        stage('Update kubeconfig') {
+        stage('Configure kubeconfig') {
             when {
                 expression { params.ACTION == 'apply' }
             }
             steps {
                 sh '''
+                mkdir -p /var/lib/jenkins/.kube
                 aws eks --region $AWS_DEFAULT_REGION \
-                update-kubeconfig --name $CLUSTER_NAME 
+                update-kubeconfig --name $CLUSTER_NAME \
+                --kubeconfig $KUBECONFIG
                 '''
             }
         }
@@ -273,7 +276,10 @@ pipeline {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                sh 'kubectl get nodes'
+                sh '''
+                export KUBECONFIG=$KUBECONFIG
+                kubectl get nodes
+                '''
             }
         }
 
@@ -283,6 +289,7 @@ pipeline {
             }
             steps {
                 sh '''
+                export KUBECONFIG=$KUBECONFIG
                 kubectl apply -f deployment.yaml
                 kubectl apply -f service.yaml
                 '''
