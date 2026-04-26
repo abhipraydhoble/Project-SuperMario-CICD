@@ -3,7 +3,7 @@
 ---
 ### Create IAM role using following policies
 ````
-AdministratorAccess
+AdministratorAccess   #only required
 AmazonEKSClusterPolicy
 AmazonEKSWorkerNodePolicy
 AmazonEKS_CNI_Policy
